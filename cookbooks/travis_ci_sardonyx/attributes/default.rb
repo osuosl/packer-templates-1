@@ -128,12 +128,10 @@ override['travis_packer_templates']['job_board']['features'] = %w[
   docker
   docker-compose
   elasticsearch
-  firefox
   go-toolchain
   google-chrome
   jdk
   memcached
-  mongodb
   mysql
   neo4j
   nodejs_interpreter
