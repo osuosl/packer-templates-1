@@ -44,10 +44,10 @@ include_recipe 'openssl'
 include_recipe 'travis_java'
 include_recipe 'travis_postgresql'
 include_recipe 'travis_build_environment::mysql'
-include_recipe 'travis_perlbrew::multi'
+include_recipe 'travis_perlbrew::multi' if node['kernel']['machine'] != 'ppc64le'
 include_recipe 'travis_build_environment::neo4j'
 include_recipe 'travis_build_environment::redis'
-include_recipe 'travis_build_environment::mongodb'
+include_recipe 'travis_build_environment::mongodb' if node['kernel']['machine'] != 'ppc64le'
 include_recipe 'memcached'
 # TODO: Uncomment when cassandra works on Java 8 again
 # https://github.com/travis-ci/packer-templates/issues/589
@@ -61,7 +61,7 @@ if node['kernel']['machine'] != 'ppc64le'
   # https://s3.amazonaws.com/travis-phantomjs/binaries/ubuntu/16.04/x86_64/phantomjs-1.9.8.tar.bz2
   # include_recipe 'travis_phantomjs'
 end
-include_recipe 'travis_build_environment::firefox'
+include_recipe 'travis_build_environment::firefox' if node['kernel']['machine'] != 'ppc64le'
 include_recipe 'travis_phantomjs::2'
 
 # HACK: sardonyx-specific shims!

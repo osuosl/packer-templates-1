@@ -32,6 +32,9 @@ override['travis_perlbrew']['modules'] = %w[
   Test::Pod::Coverage
 ]
 override['travis_perlbrew']['prerequisite_packages'] = []
+if node['kernel']['machine'] == 'ppc64le'
+  override['travis_perlbrew']['perls'] = []
+end
 
 gimme_versions = %w[
   1.7.4
@@ -129,17 +132,14 @@ override['travis_packer_templates']['job_board']['features'] = %w[
   docker
   docker-compose
   elasticsearch
-  firefox
   go-toolchain
   google-chrome
   jdk
   memcached
-  mongodb
   mysql
   neo4j
   nodejs_interpreter
   perl_interpreter
-  perlbrew
   postgresql
   python_interpreter
   redis
@@ -158,7 +158,6 @@ override['travis_packer_templates']['job_board']['languages'] = %w[
   haskell
   haxe
   julia
-  perl
   r
   rust
 ]
