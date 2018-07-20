@@ -1,6 +1,7 @@
 ---
 description: Travis CI stevonnie build env template
 variables:
+  docker_host: "{{ env `DOCKER_LOGIN_SERVER` }}"
   docker_repository: travisci/ci-stevonnie
   docker_tag: packer-{{ timestamp }}-<%= git_desc %>
   gce_account_file: "{{ env `GCE_ACCOUNT_FILE` }}"
@@ -11,6 +12,9 @@ variables:
   travis_cookbooks_edge_branch: master
   travis_cookbooks_sha: "{{ env `TRAVIS_COOKBOOKS_SHA` }}"
   travis_uid: "{{ env `TRAVIS_UID` }}"
+  openstack_zone: "{{ env `OS_ZONE` }}"
+  openstack_key_path: "{{ env `OS_SSH_KEY_PATH`}}"
+  openstack_key_name: "{{ env `OS_SSH_KEY` }}"
 builders:
 - type: googlecompute
   name: googlecompute
@@ -50,16 +54,23 @@ builders:
 # Openstack builds disabled for failing with an error that's not possible to debug
 # until a fix for the Packer error reporting is released:
 # https://github.com/travis-ci/packer-templates/issues/555
-# - type: openstack
-#   name: openstack
-#   flavor: m1.large-travis-ci
-#   image_name: "{{ user `image_name` }}"
-#   ssh_username: ubuntu
-#   networks:
-#   <% ENV['OS_NETWORKS'].to_s.split(',').map(&:strip).each do |network| %>
-#   - <%= network %>
-#   <% end %>
-#   source_image_name: "{{ user `openstack_source_image_name` }}"
+- type: openstack
+  name: openstack
+  flavor: m1.large
+  insecure: true
+  image_name: "{{ user `image_name` }}"
+  ssh_username: ubuntu
+  networks:
+  <% ENV['OS_NETWORKS'].to_s.split(',').map(&:strip).each do |network| %>
+  - <%= network %>
+  <% end %>
+  source_image_name: "{{ user `openstack_source_image_name` }}"
+  availability_zone: "{{ user `openstack_zone` }}"
+  ssh_keypair_name:  "{{ user `openstack_key_name` }}"
+  ssh_private_key_file: "{{ user `openstack_key_path`  }}"
+  #availability_zone: nova
+  #ssh_keypair_name: osu_openstack_key_latest
+  #ssh_private_key_file: /root/osu_openstack_key_latest
 provisioners:
 - type: shell
   inline: sleep 10
@@ -75,9 +86,9 @@ provisioners:
   pause_before: 5s
   only:
   - docker
-- type: file
-  source: tmp/git-meta
-  destination: /var/tmp/git-meta
+#- type: file
+#  source: tmp/git-meta
+#  destination: /var/tmp/git-meta
 - type: file
   source: packer-assets/ubuntu-xenial-normal-purge.txt
   destination: /var/tmp/purge.txt
@@ -86,7 +97,7 @@ provisioners:
   destination: /var/tmp/packages.txt
   only:
   - googlecompute
-  # - openstack
+  - openstack
 - type: file
   source: packer-assets/ubuntu-xenial-ci-stevonnie-docker-packages.txt
   destination: /var/tmp/packages.txt
@@ -169,14 +180,14 @@ provisioners:
 post-processors:
 -
   - type: docker-tag
-    repository: "{{ user `docker_repository` }}"
+    repository: "{{ user `docker_host` }}/{{ user `docker_repository` }}"
     tag: "{{ user `docker_tag` }}"
     only:
     - docker
   - type: shell-local
     scripts: bin/docker-push
     environment_vars:
-    - DOCKER_DEST={{ user `docker_repository` }}:{{ user `docker_tag` }}
+    - DOCKER_DEST={{ user `docker_host` }}/{{ user `docker_repository` }}:{{ user `docker_tag` }}
     only:
     - docker
 -
@@ -186,12 +197,12 @@ post-processors:
     - IMAGE_NAME={{ user `image_name` }}
     only:
     - googlecompute
-  - type: shell-local
-    script: bin/job-board-register
-    environment_vars:
-    - IMAGE_NAME={{ user `docker_repository` }}:{{ user `docker_tag` }}
-    only:
-    - docker
+#  - type: shell-local
+#    script: bin/job-board-register
+#    environment_vars:
+#    - IMAGE_NAME={{ user `docker_repository` }}:{{ user `docker_tag` }}
+#    only:
+#    - docker
 -
   - type: shell-local
     script: bin/write-latest-image-name
