@@ -18,9 +18,10 @@ CHEF_COOKBOOK_PATH := $(PWD)/.git::cookbooks \
 	$(TRAVIS_COOKBOOKS_GIT)::community-cookbooks@master \
 
 UNAME := $(shell uname | tr '[:upper:]' '[:lower:]')
-VSPHERE_IMAGES := $(shell command -v vsphere-images 2> /dev/null)
 
 BUILDER ?= googlecompute
+
+PACKER_VERSION ?= 1.3.1
 
 CURL ?= curl
 GIT ?= git
@@ -35,15 +36,6 @@ UNZIP ?= unzip
 
 .PHONY: all
 all: $(META_FILES) $(PHP_PACKAGES_FILE) $(SYSTEM_INFO_COMMANDS_FILES)
-
-ci-macos: ci-macos.yml $(META_FILES)
-ifndef VSPHERE_IMAGES
-	$(error "vsphere-images is not in the PATH. Please install it using `go get github.com/travis-ci/vsphere-images`")
-endif
-	bin/assert-host-macos
-	$(PACKER) build -only=vsphere \
-		-var "xcode_version=$(XCODE)" \
-		<(bin/yml2json < $<)
 
 .PHONY: stacks-short
 stacks-short:
@@ -92,7 +84,7 @@ update-gce-images:
 	bin/gce-image-update $$(git grep -lE 'source_image: ubuntu' *.yml)
 
 tmp/packer.zip:
-	$(CURL) -sSLo $@ 'https://releases.hashicorp.com/packer/1.1.0/packer_1.1.0_$(UNAME)_amd64.zip'
+	$(CURL) -sSLo $@ 'https://releases.hashicorp.com/packer/$(PACKER_VERSION)/packer_$(PACKER_VERSION)_$(UNAME)_amd64.zip'
 
 tmp/bats/.git:
 	$(GIT) clone https://github.com/sstephenson/bats.git tmp/bats
