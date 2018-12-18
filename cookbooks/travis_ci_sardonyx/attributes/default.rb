@@ -36,7 +36,7 @@ override['travis_perlbrew']['modules'] = []
 override['travis_perlbrew']['prerequisite_packages'] = []
 
 gimme_versions = %w[
-  1.7.4
+  1.11.1
 ]
 
 override['travis_build_environment']['gimme']['versions'] = gimme_versions
@@ -56,17 +56,16 @@ end
 override['leiningen']['home'] = '/home/travis'
 override['leiningen']['user'] = 'travis'
 
-node_versions = %w[
-  6.12.0
-  8.9.1
+override['travis_build_environment']['nodejs_versions'] = %w[
+  11.0.0
+  8.12.0
 ]
-
-override['travis_build_environment']['nodejs_versions'] = node_versions
-override['travis_build_environment']['nodejs_default'] = node_versions.max
+override['travis_build_environment']['nodejs_default'] = '8.12.0'
 
 pythons = %w[
-  2.7.14
-  3.6.3
+  2.7.15
+  3.6.7
+  3.7.1
 ]
 
 # Reorder pythons so that default python2 and python3 come first
@@ -91,16 +90,14 @@ pythons.each do |full_name|
 end
 
 rubies = %w[
-  2.2.7
-  2.3.4
-  2.4.1
+  2.3.8
+  2.4.5
+  2.5.3
 ]
 
 override['travis_build_environment']['default_ruby'] = rubies.reject { |n| n =~ /jruby/ }.max
 override['travis_build_environment']['rubies'] = rubies
 
-# TODO: Remove once travis-erlang-builder supports Xenial:
-# https://github.com/travis-ci/travis-erlang-builder/pull/6
 override['travis_build_environment']['otp_releases'] = []
 override['travis_build_environment']['elixir_versions'] = []
 override['travis_build_environment']['default_elixir_version'] = ''
@@ -110,7 +107,7 @@ override['travis_build_environment']['update_hostname'] = true if node['kernel']
 override['travis_build_environment']['use_tmpfs_for_builds'] = false
 
 override['travis_build_environment']['mercurial_install_type'] = 'pip'
-override['travis_build_environment']['mercurial_version'] = '4.2.2~trusty1'
+override['travis_build_environment']['mercurial_version'] = '4.8'
 
 override['travis_packer_templates']['job_board']['stack'] = 'sardonyx'
 
@@ -118,10 +115,8 @@ override['travis_postgresql']['default_version'] = '9.6'
 override['travis_postgresql']['alternate_versions'] = %w[9.4 9.5 10]
 override['travis_postgresql']['enabled'] = false # is default instance started on machine boot?
 
-# TODO: phantomjs (either make tests use phantomjs 2 or re-enable phantomjs 1)
 override['travis_packer_templates']['job_board']['features'] = %w[
   basic
-  chromium
   couchdb
   disabled-ipv6
   docker
@@ -135,6 +130,7 @@ override['travis_packer_templates']['job_board']['features'] = %w[
   nodejs_interpreter
   perl_interpreter
   perlbrew
+  phantomjs
   postgresql
   python_interpreter
   redis
@@ -142,7 +138,6 @@ override['travis_packer_templates']['job_board']['features'] = %w[
   sqlite
   xserver
 ]
-# TODO: php (travis-ci/travis-ci#8737)
 override['travis_packer_templates']['job_board']['languages'] = %w[
   __sardonyx__
   c
@@ -151,6 +146,7 @@ override['travis_packer_templates']['job_board']['languages'] = %w[
   cplusplus
   cpp
   default
+  generic
   go
   groovy
   java

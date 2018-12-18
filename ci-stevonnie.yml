@@ -12,10 +12,10 @@ variables:
   travis_cookbooks_edge_branch: master
   travis_cookbooks_sha: "{{ env `TRAVIS_COOKBOOKS_SHA` }}"
   travis_uid: "{{ env `TRAVIS_UID` }}"
+  github_token: "{{ env `GITHUB_NOSCOPE_TOKEN` }}"
   openstack_zone: "{{ env `OS_ZONE` }}"
   openstack_key_path: "{{ env `OS_SSH_KEY_PATH`}}"
   openstack_key_name: "{{ env `OS_SSH_KEY` }}"
-  github_token: "{{ env `GITHUB_TOKEN` }}"
 builders:
 - type: googlecompute
   name: googlecompute
@@ -26,7 +26,7 @@ builders:
   image_description: Travis CI stevonnie
   account_file: "{{ user `gce_account_file` }}"
   project_id: "{{ user `gce_project_id` }}"
-  source_image: ubuntu-1604-xenial-v20181004
+  source_image: ubuntu-1604-xenial-v20181023
   zone: us-central1-a
   image_name: "{{ user `image_name` }}"
   machine_type: n1-standard-4
@@ -52,9 +52,6 @@ builders:
   - "{{ .Image }}"
   - /sbin/init
   commit: true
-# Openstack builds disabled for failing with an error that's not possible to debug
-# until a fix for the Packer error reporting is released:
-# https://github.com/travis-ci/packer-templates/issues/555
 - type: openstack
   name: openstack
   flavor: m1.large
@@ -69,9 +66,6 @@ builders:
   availability_zone: "{{ user `openstack_zone` }}"
   ssh_keypair_name:  "{{ user `openstack_key_name` }}"
   ssh_private_key_file: "{{ user `openstack_key_path`  }}"
-  #availability_zone: nova
-  #ssh_keypair_name: osu_openstack_key_latest
-  #ssh_private_key_file: /root/osu_openstack_key_latest
 provisioners:
 - type: shell
   inline: sleep 10
@@ -160,6 +154,7 @@ provisioners:
   - packer-scripts/purge
   - packer-scripts/disable-apparmor
   - packer-scripts/run-serverspecs
+  - packer-scripts/test-system-info-output
   - packer-scripts/dump-dpkg-manifest
   - packer-scripts/create-bin-lib-checksums
   - packer-scripts/cleanup
