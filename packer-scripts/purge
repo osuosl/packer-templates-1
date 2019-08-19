@@ -30,6 +30,7 @@ main() {
 
   __run_retry __purge_from_manifest
   __run_retry apt-get -y autoremove
+  __run_retry apt-get install -yqq --install-recommends linux-generic-hwe-16.04
   __run_retry apt-get -y clean
 }
 
